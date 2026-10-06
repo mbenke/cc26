@@ -7,7 +7,7 @@ Lecture 1 - Introduction
 October 5, 2025
 
 ## A Riddle
-
+Consider the followng program in C:
 ```c
 int collatz(int n) {
     while(n != 1) {
@@ -22,7 +22,7 @@ int collatz(int n) {
 
 Answer me these questions three:
 
-- does `collatz` always return 1?
+- does `collatz` always return 1? what if we change 3 to 7?
 - what is the best (correct) code a compiler can generate?
 - what is the air-speed velocity of an unladen swallow?
 
@@ -39,7 +39,8 @@ collatz:
 
 Preserves program semantics according to C language standard.
 
-Infinite loops without observable effects are **undefined behaviour**.
+![Infinite loops without observable effects are **undefined behaviour**](https://i.imgflip.com/5o9a5r.jpg)
+
 
 ### Another Mystery
 
@@ -76,7 +77,7 @@ sumto:  test    edi, edi
 ### What is a compiler?
 
 A program translating programs in higher-level language to a machine language, be it for a hardware processor (e.g. x86, ARM)
-or a virtual machine (e.g. JVM),
+or a virtual machine (e.g. JVM, LLVM),
 **preserving program semantics**.
 
 Difference between interpreters and compilers:
@@ -164,9 +165,7 @@ Syntax analysis builds an *Abstract Syntax Tree* (AST) from lexem stream:
 ### Semantic (static) analysis
 
 - Declaration analysis
-- Information stored in the *symbol table*
 - Symbol use correctness check and binding to respective declarations
-  (via the symbol table).
 - Type checking (or inference).
 
 ### Synthesis
@@ -184,7 +183,7 @@ Syntax analysis builds an *Abstract Syntax Tree* (AST) from lexem stream:
 
 - A physical processor architecture, e.g. x86, x86\_64, ARM
 - A virtual machine
-  - stack-based, e.g. JVM
+  - stack-based, e.g. JVM, EVM
   - register-based, e.g. LLVM
 - A virtual machine can be used as an intermediate stage towards real machine code
   - *Ahead of Time (AOT)* --- machine code is generated before the start of the execution (e.g. LLVM)
@@ -212,10 +211,10 @@ Operation arguments and results on the stack
 
 ```
 .method public sumto()I
-  iconst_0
-  istore_2
-  iconst_0
-  istore_3
+     iconst_0
+     istore_2
+     iconst_0
+     istore_3
  L1: iload_2
      iload_1
      if_icmpge L2
@@ -317,7 +316,7 @@ This edition of the course is  lab-centered.
 
 **Lecture** introduces important concepts and techniques.
 
-**Tutorials** are an opportunity to enhance your familiarity with these techniques an practice them on paper/blackboard examples.
+**Classes** *("ćwiczenia")* are an opportunity to enhance your familiarity with these techniques an practice them on paper/blackboard examples.
 
 **Lab project:** write a compiler for a simple language to x86_64 assembly.
 
@@ -360,7 +359,7 @@ may choose to get a grade based on their $1.6*n$.
 (i.e. as if their exam marks were equal to $0.6*n$);
 where n = lab+midterm points
 
-According to department rules, participation in tutorials and laboratory sessions, is mandatory, and unexcused absence from more than 20% of the sessions may result in the forfeiture of the right to pass the course.
+According to department rules, participation in classes and laboratory sessions, is mandatory, and unexcused absence from more than 20% of the sessions may result in the forfeiture of the right to pass the course.
 
 ### Course timeline
 
@@ -372,7 +371,7 @@ According to department rules, participation in tutorials and laboratory session
 - Week 8 - advanced functions
 - Week 9 - optimisations
 - Week 10-11 - parsing
-- Week 12 - midterm
+- Week 12 - midterm (colloquium)
 
 ### Submission calendar
 
@@ -398,7 +397,8 @@ Note: approximate dates, binding dates on Moodle.
 
 - `https://moodle.mimuw.edu.pl/`
     - key for lab group n: `Mrjp26#n` e.g. `Mrjp26#9` for group 9
-- Jeremy Siek --- *Essentials of Compilation*, MIT Press 2023, PDF freely available.
+- `https://github.com/mbenke/cc26`
+- **The book:** Jeremy Siek --- *Essentials of Compilation*, MIT Press 2023, PDF freely available.
 - Cooper, Torczon --- *Engineering a Compiler*, Elsevier 2012
 - Lecture notes appear after each lecture on **moodle.mimuw.edu.pl**
 - My email: **ben@mimuw.edu.pl**
@@ -410,9 +410,9 @@ Note: approximate dates, binding dates on Moodle.
 
 ### x86-64 --- the subset we need for starters
 
-```
+```att
 reg   ::= rsp | rbp | rax | rbx | rcx | rdx | rsi | rdi
-        | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15
+        | r8  | r9  | r10 | r11 | r12 | r13 | r14 | r15
 dst   ::= %reg | int(%reg)
 src   ::= $int | dst
 instr ::= addq src, dst | subq src, dst | negq dst
@@ -426,7 +426,7 @@ prog  ::= .globl main
 - `$n` is an *immediate*;
 - `n(%r)` is memory at address `r + n`, e.g. `-16(%rbp) ~ M[%rbp - 16];
 - n (without $) means M[n] so `movq 0, %rax` is usually bad;<br/> `movq %rax, 0` potentially even worse;
-- Suffix `q` = quadword = 64 bits; in most cases can be omitted,>br/> but the book and GNU tools use it.
+- Suffix `q` = quadword = 64 bits; in most cases can be omitted,<br/> but the book and GNU tools use it.
 
 
 ### Instruction semantics
@@ -685,3 +685,8 @@ movzbq %al, %rdx         # rdx := zero-extend(al)
   read/write sets say `%rax`, not `%al`.
 
 # Questions?
+
+![what is the air-speed velocity of an unladen swallow?](https://i.imgflip.com/1sf3bd.jpg)
+ 
+ - European ca 9 m/s (20kt)
+ - African ca 10 m/s (22kt)
