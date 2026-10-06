@@ -158,6 +158,7 @@ Present your work on the next lab (2p) or a week later (1p).
 Submit a single `<uid>.tar.gz` file to moodle, where uid is your user id on students, in the format `xy128410`
 
 After unpacking the archive, the compiler should be runnable with `uv run compiler.py <input file>`.
+It should print the generated code (and nothing else) to stdout.
 
 ## Recommended practices
 
@@ -170,9 +171,9 @@ Use uv for Python project management; you can point it at support files instead 
 mrj-support = { path = "../support", editable = true }
 ```
 
-Use types everywhere possible; run mypy often and heed its warnings.
+Use [types](https://docs.python.org/3/library/typing.html) everywhere possible; run [mypy](https://mypy.readthedocs.io/en/stable/index.html) often and heed its warnings.
 
-Use `match` to handle abstract syntax trees (visitor pattern is sometimes useful too).
+Use [Python `match`](https://peps.python.org/pep-0636/) to handle abstract syntax trees (visitor pattern is sometimes useful too).
 
 ``` python
 def select_arg(self, a:expr) -> arg:
