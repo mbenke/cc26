@@ -434,7 +434,84 @@ have **two predecessors**<br/>
 Mutually recursive, all four growing `basic_blocks` as a side effect.
 
 They differ on `IfExp`: the same expression compiles differently in
-each position. 
+each position.
+
+### explicate_stmt
+
+Extract blocks from a statement
+
+Parameters:
+
+- statment s
+- continuation, i.e. list of statements to be executed after s
+- dictionary of basic blocks (modifiable)
+
+The interesting case is **if**:
+
+`If(test, thn, els)`
+
++ create block for the continuation  - thn and els will jump to it
++ explicate thn and els with this jump as the continuation. **This makes sharing happen**
++ explicate predicate `test`
+
+Assignment, expression - just call the specialised functions
+
+
+### explicate assign
+
+Compile an assignment `lhs := rhs`; 
+    rhs can be a simple expression, an IfExp or Begin.
+<br/>
+Returns a list of statements
+
+Interesting cases:
+
+- **If** handled as in explicate_stmt
+- **Begin(body, result)**:
+    + explicate assignment `lhs := result`
+    + explicate body with obtained continuation
+
+### explicate effect
+
+Extract side effects of an expression
+
+Parameters:
+
+- expression e
+- continuation, i.e. list of statements to be executed after e
+- dictionary of basic blocks (modifiable)
+
+Interesting cases:
+
+- function call may have effect, hence translated to `[Expr(e)] + cont`
+- **Begin(body, result)**:
+    + explicate effect from result
+    + explicate stmts in body
+    + (`Begin` vanishes)
+
+### explicate_pred
+
+```
+explicate_pred(cond: expr, thn: list[stmt], els: list[stmt], basic_blocks)
+```
+
+Interesting cases for *cond* are comparisons and *if expression*:
+
+- comparison:
+    + create blocks for thn and els
+    + return an if statement jumping to these blocks
+- IfExp(test, body, orelse):
+    + create blocks for *thn* and *els* (not *body* and *orelse*!)
+    + explicate *body* and *orelse* in predicate context, with jumps to thn/els blocks as continuations
+    + finally explicate *test* in predicate context
+
+The latter case is complex because it handles the case when a condition is a conditional expression itself, e.g.
+
+``` python
+if(x < 10 if x > 0 else False): ...
+```
+
+which is more common then you may think - shrink compiles `and/or` this way.
 
 ### Continuations, shared not copied
 
