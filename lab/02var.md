@@ -97,6 +97,9 @@ Submit a single `<uid>.tar.gz` file to moodle, where uid is your user id on stud
 
 After unpacking the archive, the compiler should be runnable with `uv run compiler.py <input file>`.
 
+Moodle cut-off date: Oct 27 (after this date, no submissions accepted)
+
+
 ## Recommended practices
 
 Use git (or Jujutsu over git) for version management **from the start**.

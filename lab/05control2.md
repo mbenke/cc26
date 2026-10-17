@@ -227,6 +227,9 @@ Write some tests; make sure all key functionalities are covered.
 
 After unpacking the archive, the compiler should be runnable with `uv run compiler.py <input file>`.
 
+Moodle cut-off date: Nov 17 (after this date, no submissions accepted)
+
+
 ## Recommended practices
 
 Use git (or Jujutsu over git) for version management **from the start**.
