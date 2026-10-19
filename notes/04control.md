@@ -323,6 +323,11 @@ Python has no expression that binds a variable, so we add one.
 
 ## explicate_control
 
+* **explicate** - borrowed from Latin explicāre (unfold, explain):
+    to explain meticulously or in great detail.
+
+Wiktionary
+
 ### The problem
 
 After RCO: a *tree* of `if`s. The target: a *graph* of blocks.
@@ -452,7 +457,7 @@ The interesting case is **if**:
 
 + create block for the continuation  - thn and els will jump to it
 + explicate thn and els with this jump as the continuation. **This makes sharing happen**
-+ explicate predicate `test`
++ explicate predicate `test`, passing obtained branches
 
 Assignment, expression - just call the specialised functions
 
@@ -466,10 +471,13 @@ Returns a list of statements
 
 Interesting cases:
 
-- **If** handled as in explicate_stmt
 - **Begin(body, result)**:
     + explicate assignment `lhs := result`
     + explicate body with obtained continuation
+- **If** handling is similar to explicate_stmt:
+    + create block for the continuation  - thn and els will jump to it
+    + explicate thn and els with this jump as the continuation (using `explicate_assign`)
+    + explicate predicate `test`, passing obtained branches
 
 ### explicate effect
 
