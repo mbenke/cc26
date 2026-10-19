@@ -4,7 +4,7 @@
 
 ```
 exp ::= ...
-      | BinOp(atm,Mul(),atm)
+      | BinOp(atm,Mult(),atm)
 ```
 
 **Stretch goal:**
@@ -13,7 +13,7 @@ add division and modulo:
 
 ```
 exp ::= ...
-      | BinOp(atm,Mul(),var)
+      | BinOp(atm,Mult(),var)
       | BinOp(atm,FloorDiv(),var)
       | BinOp(atm,Mod(),atm)
 ```
@@ -47,7 +47,7 @@ exp ::= atm
       | UnaryOp(USuB(),exp)
       | BinOp(exp,Add(),exp)
       | BinOp(exp,Sub(),exp)
-      | BinOp(exp,Mul(),exp)
+      | BinOp(exp,Mult(),exp)
 atm ::= Constant(int) | var
 var ::= Name(str)
 ```
