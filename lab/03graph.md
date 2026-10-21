@@ -72,7 +72,7 @@ For details see EoC, section 4.3.
 Compare the computed graphs to the manually constructed ones.
 
 4. Write a function to color the graph with natural numbers. For starters you can use a simple greedy algorithm:
-always use the lowest color not used by the neighbours. Later you can refine it to use the saturation heuristic described in section 4.4 of EoC.
+always use the lowest color not used by the neighbours. Refine it to use the saturation heuristic described in section 4.4 of EoC.
 Note: vertex colors can be kept in a separate map; no need to store them in vertices themselves.
 
 
