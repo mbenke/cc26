@@ -117,6 +117,23 @@ So collectors ar conservative: keep everything that *can* be reached.
 Everything else is garbage. Some garbage survives a collection; no
 live object is ever reclaimed.
 
+### Reference counting
+
+-  Every object maintains the count of references to itself.
+-  Every reference assignment modifies relevant counters; when the counter reaches 0 --- the object is released.
+
+**Advantages:**
+
+  -  easy to implement
+  -  no long GC pauses
+
+**Disadvantages:**
+
+  -  time and memory overhead (a couple of memory writes for every assignment)
+  -  unreachable cyclic structures (e.g. two-way lists) may remain undetected
+
+Sometimes used in connection with other methods  (e.g. in Python).
+
 ### Two-space copying
 
 The heap is two halves: **FromSpace** and **ToSpace**.
@@ -132,6 +149,21 @@ effect of copying.
 
 OTOH half of the memory is "wasted", but we will see how it can be improved.
 
+### Before a collection
+
+![](copy-collect-before.svg)
+
+Six tuples reachable from the root set; four are not --- including a
+**cycle**, a pair that point at each other.
+
+### After a collection
+
+![](copy-collect-after.svg)
+
+The six copied to ToSpace, pointers and all; the roots now lead there.
+
+FromSpace --- live or garbage, no longer distinguishable --- goes unread.
+
 ### Cheney's algorithm
 
 Breadth-first search, with the queue living in the ToSpace itself.
@@ -146,6 +178,60 @@ Two pointers into the ToSpace: **free** (back of the queue) and
 
 No auxiliary stack or queue --- the copied data *is* the queue.
 
+### Before a collection
+
+![](copy-collect-before.svg)
+
+Three roots: `r1->(p1,p2)` `r2->(7,5,p3)` `r3->(p4,4);  start by copying tuples referenced by them to ToSpace.
+
+They form the initial queue; now step through the queue, following the pointers and copying objects they reference.
+
+
+### Cheney's algorithm, step by step
+
+![](cheney1.svg)
+
+pointers in the queue may still point to the FromSpace step through the queue, following the pointers.
+
+### Processing the pair
+
+![](cheney2.svg)
+
+The first pair points to `p1=(7,5,p3)` and `p2=(True, 42)`
+
+- p1 has been already copied (pointed to by a root)
+- p2 is copied to the queue, advancing free pointer
+- advance the scan pointer
+
+Note: we process the queue one tuple at a time 
+
+### Processing `p1=(7, 5, p3)` and `p2=(True,42)`
+
+`p3` points to `(3,p2)` - copying to the queue
+
+
+`(True, 42)` holds no pointers, so scanning it next does
+nothing --- `scan` just walks past it.
+
+![](cheney3.svg)
+
+### Processing `(p4, 4)`
+
+![](cheney4.svg)
+
+`p4 = (8,)` - copying
+
+### Done
+
+The pointer in `(3, p2)` forwards to `(True, 42)`, already in the queue.
+
+`(8,)` contains no pointers - advancing `scan`
+
+Every pointer now resolves inside ToSpace, and `scan` has caught up
+with `free`.
+
+![](cheney5.svg)
+
 ### Forwarding pointers
 
 The graph may be shared, so we must not copy a tuple twice.
@@ -155,12 +241,13 @@ x = (0,1)
 y = (x,x)
 ```
 When a tuple is copied, its **old** copy is overwritten with the
-address of the new one --- a *forwarding pointer*. Anything arriving
+address of the new one --- a *forwarding pointer*.
+
+Anything arriving
 later at the old address follows it instead of copying again.
 
-That also makes cycles safe. A well-typed program cannot build one,
+That also makes cycles safe. A well-typed program in our language cannot build one,
 but the collector handles them anyway. 
-
 
 ## Data representation
 
@@ -176,8 +263,8 @@ Some ways out:
 4. "if it looks like a pointer (range), and quacks like a pointer, call it a pointer"
 
 
-We take (1) for the **heap** and (2) for the
-**stack**.
+We take (1) for the **heap** and (2) for the **stack**.<br/>
+We also make sure registers contain no pointers at GC time.
 
 Note:
 
@@ -198,15 +285,17 @@ Every tuple carries one extra 64-bit word in front of it:
 - **bit 0** --- 1 while the tuple has not been copied. When it is 0,
   the whole word is a forwarding pointer. (Addresses are 8-byte
   aligned, so their low bits are free.)
-- **bits 1--6** --- the length. Six bits; hence 50 elements.
-- **bits 7--56** --- the pointer mask: bit *i* is 1 if element *i* is
+- **bits 1--6** --- the length.
+- **bits 7--56** --- the pointer mask: bit *i* is 1 if element *i-7* is
   itself (a pointer to) a tuple.
 
 ```python
 tag = 1 | (len << 1) | (mask << 7)
 ```
 
-`tuple[int]` gives `3`; `tuple[tuple[int]]` gives `131`.
+`tuple[int]` has tag `3` (no pointers: `1 | (1 << 1)`);
+
+`tuple[tuple[int]]` gives `131`. (128 indicates pointer at position 0)
 
 ### The root stack
 
@@ -297,7 +386,7 @@ begin:
     ...
     x(n-1) = e(n-1)
     if free_ptr + bytes < fromspace_end:
-        pass
+        pass     # empty stmt list
     else:
         collect(bytes)
     v = allocate(n, type)
@@ -333,8 +422,8 @@ Allocation, inline --- no call, three instructions and a store:
 lhs = allocate(len, type)
 ⟹
     movq free_ptr(%rip), %r11
-    addq $8(len+1), free_ptr(%rip)
-    movq $tag, 0(%r11)
+    addq $size, free_ptr(%rip)     # size = 8*(len+1)
+    movq $tag, 0(%r11)             # tag computed from len and type
     movq %r11, lhs
 ```
 
@@ -357,12 +446,12 @@ the tag:
 lhs = tup[n]
 ⟹
     movq tup, %r11
-    movq 8(n+1)(%r11), lhs
+    movq d(%r11), lhs      # d = 8*(n+1)
 
 tup[n] = rhs
 ⟹
     movq tup, %r11
-    movq rhs, 8(n+1)(%r11)
+    movq rhs, d(%r11)      # d = 8*(n+1)
 ```
 
 ### Why %r11, and not %rax
@@ -383,8 +472,11 @@ repairs a memory-to-memory move through `%rax`:
 Two values, one register. `%r11` is reserved precisely so this cannot
 happen --- and `%r15` likewise, for the root stack.
 
-Both were already in `reserved_registers`; this is the lecture that
+Both were already excluded from allocation; this is the lecture that
 says why.
+
+Note: `%r11` is short-lived (like %rax) and caller-save;
+%r15 is callee-save since the top of the root-stack needs to be preserved.
 
 ### Register allocation
 
@@ -392,9 +484,9 @@ The allocator gains one job: **respect the root stack**.
 
 Two halves, each small:
 
-- **spill tuple-typed variables to root stack (addressed via `%r15)`**, not call stack (`%rbp`).
-A decision  about *homes*, taken after colouring;
-- **force call-live tuple variables to spill at all.** They already
+- **spill tuple-typed variables to root stack (addressed via `%r15)`**, not call stack (`%rbp`);<br/>
+a decision  about *homes*, taken after colouring;
+- **force call-live tuple variables to always spill.**<br/> They already
   interfere with the caller-saved registers; add edges to the
   callee-saved ones too, and no register is left.
 
@@ -433,7 +525,7 @@ Hewitt, 1987:
 - if an object survives T , it will likely live long
 - new objects contain pointers to old ones more often than conversely
 
-Idea:
+**Idea:**
 
 - A “nursery” for young objects with copying GC
 (minor collection)
@@ -478,7 +570,7 @@ The collector gets more than that.
 
 ### What rules out cycles is the type system
 
-Careful with the first of those. Even *with* mutation, a cycle needs a
+Even *with* mutation, a cycle needs a
 tuple that contains itself (perhaps indirectly):
 
 ```python
@@ -491,8 +583,16 @@ cannot build a cycle whether tuples are mutable or not.
 
 Cycles arrive with **dynamic typing**. We use
 forwarding pointers and handle them anyway: in Cheney's algorithm it
-is free, and we would rather not revisit the collector.
+is free, and we do not need to revisit the collector.
 
+Cycles can also arrive with named types:
+
+```python
+typ1 = tuple[int,typ2]
+typ2 = tuple[int,typ1]
+```
+
+(requires that we can use the type name before definition)
 
 ## Wrapping up
 

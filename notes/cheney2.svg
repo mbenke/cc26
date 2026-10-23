@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="824" height="583" viewBox="0 0 824 583" role="img" aria-label="the pair is processed: its first pointer forwards to the tuple already in the queue, its second copied (True, 42) to the back">
+
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #16181d; }
+      .cell rect { fill: #272c34; stroke: #8b95a3; }
+      .cell text, .dot { fill: #e4e8ee; }
+      .arrow line, .arrow path { stroke: #8b95a3; }
+      .arrow polygon { fill: #8b95a3; }
+      .tuple-border { stroke: #8b95a3; }
+      .label { fill: #9aa3b0; }
+    }
+  </style>
+<rect class="bg" x="0" y="0" width="824" height="583" fill="#ffffff"/>
+<g class="cell">
+<rect x="37.4" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<circle class="dot" cx="68.6" cy="152.9" r="16.2" fill="#1c1f24"/>
+<rect x="99.8" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<circle class="dot" cx="131.0" cy="152.9" r="16.2" fill="#1c1f24"/>
+</g>
+<g class="cell">
+<rect x="162.2" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<text x="193.4" y="160.8" text-anchor="middle" font-family="ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="24.0" fill="#1c1f24">7</text>
+<rect x="224.6" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<text x="255.8" y="160.8" text-anchor="middle" font-family="ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="24.0" fill="#1c1f24">5</text>
+<rect x="287.0" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<circle class="dot" cx="318.2" cy="152.9" r="16.2" fill="#1c1f24"/>
+</g>
+<g class="cell">
+<rect x="349.4" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<circle class="dot" cx="380.6" cy="152.9" r="16.2" fill="#1c1f24"/>
+<rect x="411.8" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<text x="443.0" y="160.8" text-anchor="middle" font-family="ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="24.0" fill="#1c1f24">4</text>
+</g>
+<g class="cell">
+<rect x="474.2" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<text x="505.4" y="158.6" text-anchor="middle" font-family="ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="17.3" fill="#1c1f24">True</text>
+<rect x="536.6" y="121.7" width="62.4" height="62.4" fill="#f0f0f0" stroke="#7d7d7d" stroke-width="1.5"/>
+<text x="567.8" y="158.6" text-anchor="middle" font-family="ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="17.3" fill="#1c1f24">42</text>
+</g>
+<line class="tuple-border" x1="162.2" y1="112.9" x2="162.2" y2="192.8" stroke="#7d7d7d" stroke-width="3.2" stroke-linecap="round"/>
+<line class="tuple-border" x1="349.4" y1="112.9" x2="349.4" y2="192.8" stroke="#7d7d7d" stroke-width="3.2" stroke-linecap="round"/>
+<line class="tuple-border" x1="474.2" y1="112.9" x2="474.2" y2="192.8" stroke="#7d7d7d" stroke-width="3.2" stroke-linecap="round"/>
+<g class="arrow"><path d="M 68.6 169.1 Q 131.0 229.0 178.2 195.0" fill="none" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="193.4,184.1 185.5,205.1 171.0,184.9" fill="#7d7d7d"/></g>
+<g class="arrow"><path d="M 131.0 169.1 Q 318.2 256.5 488.0 190.8" fill="none" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="505.4,184.1 492.5,202.5 483.5,179.2" fill="#7d7d7d"/></g>
+<g class="arrow"><line x1="318.2" y1="136.7" x2="301.7" y2="104.1" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="293.3,87.4 312.9,98.4 290.6,109.7" fill="#7d7d7d"/></g>
+<g class="arrow"><line x1="380.6" y1="136.7" x2="364.1" y2="104.1" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="355.7,87.4 375.3,98.4 353.0,109.7" fill="#7d7d7d"/></g>
+<g class="arrow"><line x1="162.2" y1="240.2" x2="162.2" y2="202.8" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="162.2,184.1 174.7,202.8 149.8,202.8" fill="#7d7d7d"/></g>
+<text class="label" x="162.2" y="280.2" text-anchor="start" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21.6" fill="#5f6874">scan</text>
+<text class="label" x="162.2" y="316.4" text-anchor="start" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21.6" fill="#5f6874">pointer</text>
+<g class="arrow"><line x1="599.0" y1="240.2" x2="599.0" y2="202.8" stroke="#7d7d7d" stroke-width="1.5"/><polygon points="599.0,184.1 611.5,202.8 586.6,202.8" fill="#7d7d7d"/></g>
+<text class="label" x="599.0" y="280.2" text-anchor="end" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21.6" fill="#5f6874">free</text>
+<text class="label" x="599.0" y="316.4" text-anchor="end" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21.6" fill="#5f6874">pointer</text>
+</svg>
