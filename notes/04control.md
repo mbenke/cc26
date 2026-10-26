@@ -1157,7 +1157,7 @@ start:
     goto loop1
 
 loop1:
-    if i<n goto body1 else after1
+    if i<n: goto body1 else: goto after1
 
 body1:
     k = i + 5
@@ -1166,7 +1166,7 @@ body1:
     goto loop2
 
 loop2:
-    if j>0 goto body2 else after2
+    if j>0: goto body2 else: goto after2
 
 body2:
     print(j)
