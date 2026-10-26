@@ -72,7 +72,7 @@ Concrete syntax, on top of `Lvar`:
 cmp ::= == != < <= > >=
 exp  ::= ... | True | False
        | exp and exp | exp or exp | not exp
-       | exp cmp exp                 
+       | exp cmp exp
        | exp if exp else exp
 stmt ::= ... | if exp: stmt+ else: stmt+
 ```
@@ -447,9 +447,13 @@ Extract blocks from a statement
 
 Parameters:
 
-- statment s
-- continuation, i.e. list of statements to be executed after s
+- statement *s*
+- continuation *cont* - list of statements to be executed after s
 - dictionary of basic blocks (modifiable)
+
+Returns:
+
+- corresponding list of *Cif* statements (including *cont*)
 
 The interesting case is **if**:
 
@@ -464,7 +468,7 @@ Assignment, expression - just call the specialised functions
 
 ### explicate assign
 
-Compile an assignment `lhs := rhs`; 
+Compile an assignment `lhs := rhs`;
     rhs can be a simple expression, an IfExp or Begin.
 <br/>
 Returns a list of statements
@@ -641,9 +645,17 @@ evaluation ensured by `shrink` plus `explicate_pred`.
 
 ## select_instructions
 
+Instead of a single block, a program is now a dictionary mapping labels to single blocks.
+
+Instruction selection will have to run for every block in this dict, yielding a labelled block of assembly.
+
+Every block is terminated (ends with a jump) so you can put these blocks in any order
+
+*Cif* introduces some new statements - jumps and return
+
 ### The new statements
 
-Per block now, but otherwise business as usual:
+
 
 ```
 goto L                      =>  jmp L
@@ -662,6 +674,9 @@ else: goto L2                   j<cc> L1
 
 `If` can occur only in the form `If(Compare(...), [Goto], [Goto])` ---
 `explicate_control` guarantees it.
+
+
+When we have functions instead of `jmp main_conclusion` each function will have it own conclusion.
 
 ### Reminder --- Example 1: shrink, RCO, explicate
 
@@ -717,9 +732,9 @@ block.2:                                             block.2:
 
 block.0:                                             block.0:
     print(_1)                                            movq _1, %rdi
-    return 0                                             callq print_int
-    movq $0, %rax
-    jmp main_conclusion
+                                                         callq print_int
+    return 0                                             movq $0, %rax
+                                                         jmp main_conclusion
 ```
 
 Two variables left to place; the shape is already x86.
@@ -798,7 +813,6 @@ L_after(j<cc> L) = live_before_block[L] U L_before(next)
 ```
 
 - `j<cc>` may go either way: assume both, take the **union**.
-  Conservative costs a register; wrong costs correctness.
 
 <!--
 - `L_before(k) = (L_after(k) - W(k)) U R(k)` is unchanged; with `R`
@@ -830,9 +844,9 @@ L_after(cmpq $1, x) = live_before_block[block.1] U live_before_block[block.2]
 | `xorq s, d`     | `s`, `d`              | `d`             |
 | `jmp L`, `j<cc> L` | *nothing*          | *nothing*       |
 
-- A jump's contribution is that live-after set, not `R`.
+- A jump's contribution is its live-after set (i.e. live-before of its target block), not `R`.
 - The flags are not a location we allocate, so they never appear ---
-  never reorder a `cmpq`/`set<cc>` pair.
+  never split a `cmpq`/`set<cc>` or `cmpq/j<cc>` pair.
 - `%al` is a part of `%rax`
 
 ### Prelude and conclusion with blocks
@@ -855,9 +869,12 @@ main_conclusion:
 `main` is the entry block; every finishing path jumps to the
 conclusion.
 
+There is no need to calculate liveness for these two blocks - they do not really use allocatable registers
+
+<!--
 `Lif` has no `return` of its own --- the one `Return` is the base
 continuation, so there is exactly one `jmp main_conclusion`.<br/>
-
+-->
 If callee-saved registers are used, we must save them in prelude and restore in the conclusion;<br/>
 with multiple rturns this code would be duplicated.
 
@@ -925,17 +942,8 @@ back to it (and vice versa). Generate labels first, fill content later.
 
 ### The cycle
 
-Our loop from the start of the lecture, after instruction selection
-(labels shortened for readability):
+Our example loop
 
-![](loop-cfg.svg)
-
-`after` is fine: live-before `{sum}`.<br/>
-But `loop` needs `body` and
-`body` needs `loop` --- no order puts successors first, because there
-is no topological order.
-
-Original source:
 ```python
 sum = 0
 i = 5
@@ -944,6 +952,40 @@ while i > 0:
     i = i - 1
 print(sum)
 ```
+
+after instruction selection
+(labels shortened for readability):
+
+![](loop-cfg.svg)
+
+`after` is fine: live-before `{sum}`.<br/>
+
+But `loop` needs `body` and
+`body` needs `loop` --- no order puts successors first, because there
+is no topological order.
+
+<!--
+main_start:
+    movq $0, sum
+    movq $5, i
+    jmp loop
+
+loop:
+    cmpq $0, i
+    jg body
+    jmp after
+
+body:
+    addq i, sum
+    subq $1, i
+    jmp loop
+
+after:
+    movq sum, %rdi
+    callq print_int
+    movq $0, %rax
+    jmp main_conclusion
+-->
 
 ### The cycle - livesets
 
@@ -975,6 +1017,34 @@ Start with the **empty** live-before set for every block --- an
 3. stop when a round adds nothing.
 
 Each round only *adds*, and variables are finite, so it stops.
+
+### With empty approximation
+
+For every block Compute live-before assuming empty live-after
+```att
+main_start:                 {}
+    movq $0, sum            {}
+    movq $5, i              {}
+    jmp loop
+
+loop:                       { i }
+    cmpq $0, i
+    jg body
+    jmp after
+
+body:                       { i, sum }
+    addq i, sum             { i }
+    subq $1, i              {}
+    jmp loop
+
+after:                      { sum }
+    movq sum, %rdi          {}
+    callq print_int         {}
+    movq $0, %rax           {}
+    jmp main_conclusion     {}
+```
+
+This is just an approximation, the live-sets will grow.
 
 ### The iteration
 
@@ -1036,6 +1106,85 @@ main:                      block.2:
     pushq %rbx                 addq %rcx, %rbx
     pushq %r12                 subq $1, %r12
 ```
+
+
+### A more refined approach
+
+Before iterating compute what every block adds (*use*) and removes from the live-set (*kill*)
+
+```att
+#                           USE            KILL
+main_start:                 {}            { i, sum }
+    movq $0, sum            {}            { i }   # movq s,d kills d
+    movq $5, i              {}            {}
+    jmp loop
+
+loop:                       { i }         {}
+    cmpq $0, i
+    jg body
+    jmp after
+
+body:                       { i, sum }    {}        #
+    addq i, sum             { i }         {}        # addq/subq s,d do not kill
+    subq $1, i              {}            {}
+    jmp loop
+
+after:                      { sum }       {}
+    movq sum, %rdi          {}            {}
+    callq print_int         {}            {}
+    movq $0, %rax           {}            {}
+    jmp main_conclusion     
+```
+
+```
+use(i) = R(i)
+kill(i) = W(i) - R(i)
+```
+
+Now instead of recomputing each instruction in the fixpoint phase,<br/>
+iterate through blocks subtracting *kill-set* and adding *use-set*
+
+In this example only the start block has nontrivial kill-set but this will not always be the case
+
+
+### A more contrived example
+
+
+```python
+# for i in range(1,n): for j in range(i,0,-1): print(j)
+start:
+    n = input_int()
+    goto loop1
+
+loop1:
+    if i<n goto body1 else after1
+
+body1:
+    k = i + 5
+    print(k)
+    j = i
+    goto loop2
+
+loop2:
+    if j>0 goto body2 else after2
+
+body2:
+    print(j)
+    j = j-1
+    goto loop2
+
+after2:
+    i = i + 1
+    goto loop1
+
+after1:
+    return 0
+```
+
+Failure to notice that *j* is killed in *body1* would lead to false conclusion that it is live in *start*
+and interferes with *k*.
+
+Working out the details is left as an exercise
 
 ### Summary
 
