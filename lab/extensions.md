@@ -74,7 +74,7 @@ def inc(x : int) -> int:
 
 inc1 = inc
 print(map(inc1, (0, 41))[1])
-
+```
 ### lexically scoped functions (6p)
 
 ### efficient tail calls (3p)
