@@ -19,7 +19,7 @@ class X86Program:
     body: dict[str, list[instr]] | list[instr]
     entries: frozenset[str] = frozenset()
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = ''
         if isinstance(self.body, dict):
             if 'main' in self.body:
@@ -53,7 +53,7 @@ class X86Program:
 class X86ProgramDefs:
     defs: list[ast.FunctionDef]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n".join([str(d) for d in self.defs])
 
 @dataclass
@@ -64,7 +64,7 @@ class X86Def:
     blocks: dict[str, list[instr]]
     __match_args__ = ("name", "blocks")
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = 'def ' + self.name + ':\n'
         for (lbl, ss) in self.blocks.items():
             result += '  ' + lbl + ':\n'
@@ -90,11 +90,11 @@ class Instr(instr):
         object.__setattr__(self, 'instr', name)
         object.__setattr__(self, 'args', tuple(args))
 
-    def source(self):
+    def source(self) -> arg:
         return self.args[0]
-    def target(self):
+    def target(self) -> arg:
         return self.args[-1]
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + self.instr + ' ' + ', '.join(str(a) for a in self.args)
 
 @dataclass(frozen=True, eq=False)
@@ -102,7 +102,7 @@ class Callq(instr):
     func: str
     num_args: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'callq' + ' ' + label_name(self.func)
 
 @dataclass(frozen=True, eq=False)
@@ -110,7 +110,7 @@ class IndirectCallq(instr):
     func: arg
     num_args: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'callq' + ' *' + str(self.func)
 
 @dataclass(frozen=True, eq=False)
@@ -118,21 +118,21 @@ class JumpIf(instr):
     cc: str
     label: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'j' + self.cc + ' ' + label_name(self.label)
 
 @dataclass(frozen=True, eq=False)
 class Jump(instr):
     label: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'jmp ' + label_name(self.label)
 
 @dataclass(frozen=True, eq=False)
 class IndirectJump(instr):
     target: location
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'jmp *' + str(self.target)
 
 @dataclass(frozen=True, eq=False)
@@ -140,7 +140,7 @@ class TailJump(instr):
     func: arg
     arity: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + 'tailjmp ' + str(self.func)
 
 
@@ -148,28 +148,28 @@ class TailJump(instr):
 class Zero(instr):
     size: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return indent_stmt() + '.zero ' + str(self.size)
 
 @dataclass(frozen=True)
 class Variable(location):
     id: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.id
 
 @dataclass(frozen=True)
 class Immediate(arg):
     value: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '$' +  str(self.value)
 
 @dataclass(frozen=True)
 class Reg(location):
     id: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '%' + self.id
 
 @dataclass(frozen=True)
@@ -181,14 +181,14 @@ class Deref(arg):
     reg: str
     offset: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.offset) + '(%' + self.reg + ')'
 
 @dataclass(frozen=True)
 class Global(arg):
     name: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return label_name(self.name) + "(%rip)"
 
 
