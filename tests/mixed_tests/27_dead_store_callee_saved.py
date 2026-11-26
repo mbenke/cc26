@@ -1,4 +1,4 @@
-def g(n):
+def g(n: int) -> int:
     print(n)
     print(n)
     d = 5

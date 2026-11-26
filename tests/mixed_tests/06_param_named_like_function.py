@@ -1,7 +1,7 @@
-def g(x):
+def g(x: int) -> int:
     return x + 1
 
-def f(g):
+def f(g: int) -> int:
     return g * 2
 
 print(f(input_int()))

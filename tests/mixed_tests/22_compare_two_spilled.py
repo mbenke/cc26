@@ -1,4 +1,4 @@
-def id(x):
+def id(x: int) -> int:
     return x
 
 a = 1

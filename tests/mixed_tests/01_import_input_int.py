@@ -1,6 +1,6 @@
 from runtime import input_int
 
-def double(x):
+def double(x: int) -> int:
     return x + x
 
 n = input_int()

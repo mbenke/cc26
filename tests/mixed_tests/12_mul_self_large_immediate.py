@@ -1,4 +1,4 @@
-def f(y):
+def f(y: int) -> int:
     y = y * 3000000000
     return y
 

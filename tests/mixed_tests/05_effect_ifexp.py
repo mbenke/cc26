@@ -1,4 +1,4 @@
-def f(x):
+def f(x: int) -> int:
     print(x)
     return x
 

@@ -1,4 +1,4 @@
-def shout(x):
+def shout(x: int) -> int:
     print(x)
     return 0
 

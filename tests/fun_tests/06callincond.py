@@ -1,4 +1,4 @@
-def is_pos(x: int) -> int:
+def is_pos(x: int) -> bool:
     return x > 0
 
 if is_pos(3):

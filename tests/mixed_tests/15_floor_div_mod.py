@@ -1,4 +1,4 @@
-def half(n):
+def half(n: int) -> int:
     return n // 2
 
 x = input_int()

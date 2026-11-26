@@ -1,10 +1,10 @@
-def f(a):
+def f(a: int) -> int:
     return a + 3000000000
 
-def g(a):
+def g(a: int) -> int:
     return a - 3000000000
 
-def h(a):
+def h(a: int) -> int:
     return a * 3000000000
 
 x = input_int()
